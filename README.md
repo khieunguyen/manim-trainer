@@ -9,7 +9,7 @@
 
 Fine-tune smaller LLM models to generate high-quality [Manim](https://www.manim.community/) animation code from natural language descriptions.
 
-**📝 Research Paper: [Upcoming](https://arxiv.org/abs/....)**
+**📝 Research Paper: [Large Language Model Approaches to Educational Video Generation Using Manim](https://doi.org/10.1007/978-3-032-07938-1_26)**
 
 **🚧 Note:** This project is still in development. Some features may not be fully implemented or tested yet.
 
