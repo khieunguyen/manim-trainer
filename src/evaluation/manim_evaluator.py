@@ -7,7 +7,10 @@ It captures the output and error messages, allowing for easy debugging and valid
 __author__      = "Ravidu Silva"
 
 from pathlib import Path
+import threading
 from src.utils.manim_renderer import ManimRenderer, RenderQuality, RenderResult
+from src.utils.utils import get_manim_version
+from config import Config
 
 
 class ManimEvaluator:
@@ -25,6 +28,13 @@ class ManimEvaluator:
         Args:
             render_quality (RenderQuality): Render quality setting. Default is RenderQuality.P_480.
         """
+        # Verify Manim version matches expected version
+        self.lock = threading.Lock()
+
+        installed_manim_version = get_manim_version()
+        if installed_manim_version != Config.MANIM_VERSION:
+            print(f"WARNING: Installed Manim version ({installed_manim_version}) does not match expected version ({Config.MANIM_VERSION}).")
+
         self.evaluator_temp_output = evaluator_temp_output
         self.evaluator_temp_output.mkdir(parents=True, exist_ok=True)
         self.manim_renderer = ManimRenderer(
@@ -45,16 +55,26 @@ class ManimEvaluator:
 
     def evaluate_code(self, manim_code: str, clear_output: bool = True) -> RenderResult:
         """Run Manim code, returning success status, info logs, and error logs."""
-        render_result = self.manim_renderer.render_code(
-            manim_code=manim_code,
-            video_name="test_video",
-            preview=False
-        )
 
-        if render_result.video_path is not None:
-            # Delete the temporary video file after evaluation
-            if clear_output and render_result.video_path.exists():
-                render_result.video_path.unlink()
+        with self.lock:
+            if manim_code.strip() == "":
+                return RenderResult(
+                    success=False,
+                    video_path=None,
+                    info="",
+                    errors="No code provided."
+                )
 
-        return render_result
+            render_result = self.manim_renderer.render_code(
+                manim_code=manim_code,
+                video_name="test_video",
+                preview=False
+            )
+
+            if render_result.video_path is not None:
+                # Delete the temporary video file after evaluation
+                if clear_output and render_result.video_path.exists():
+                    render_result.video_path.unlink()
+
+            return render_result
 

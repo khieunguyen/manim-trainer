@@ -3,6 +3,7 @@
 class Config:
     CACHE_PATH = "cache"
     EVAL_TEMP_DIR = "tmp/eval"
+    MANIM_VERSION = "Manim Community v0.19.0"
 
 class SupportedModels:
     """Supported models for the LLM."""
@@ -11,3 +12,4 @@ class SupportedModels:
     QWEN3_4B_BASE = "Qwen/Qwen3-4B-Base"
     LLAMA_3_2_3B = "meta-llama/Llama-3.2-3B-Instruct"
     CODE_EVALUATOR_MODEL = "microsoft/codebert-base"
+    VIDEO_COMPARATOR_EMBEDDING_CLIP_MODEL = "ViT-L/14"

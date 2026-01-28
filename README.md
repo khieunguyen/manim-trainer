@@ -1,105 +1,209 @@
-# Manim Fine-Tune
+# ManimTrainer: Fine-Tuning LLMs for Manim Code Generation using Visually Grounded Reinforcement Learning
 
 [![License: CC-BY-NC-SA-4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc-sa/4.0/)
-[![Python Version](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
-[![HuggingFace Model](https://img.shields.io/badge/HuggingFace-Model-orange.svg)](https://huggingface.co/models)
-[![HuggingFace Dataset](https://img.shields.io/badge/HuggingFace-Dataset-blue.svg)](https://huggingface.co/datasets/SuienR/ManimBench-v1)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/downloads/release/python-3110/)
+[![Manim Community](https://img.shields.io/badge/Manim-Community-green)](https://www.manim.community/)
+[![Hugging Face](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Models-yellow)](https://huggingface.co/)
+[![Hugging Face Dataset](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset-blue)](https://huggingface.co/datasets/SuienR/ManimBench-v1)
+[![Unsloth](https://img.shields.io/badge/%F0%9F%A6%A5%20Unsloth-Accelerated-orange)](https://github.com/unslothai/unsloth)
 
+A toolkit for fine-tuning Large Language Models (LLMs) to generate [Manim](https://www.manim.community/) animation code using Supervised Fine-Tuning (SFT) and Visually Grounded Reinforcement Learning using Group Relative Policy Optimization (GRPO/GSPO) techniques.
 
-
-Fine-tune smaller LLM models to generate high-quality [Manim](https://www.manim.community/) animation code from natural language descriptions.
-
-**📝 Research Paper: [Large Language Model Approaches to Educational Video Generation Using Manim](https://doi.org/10.1007/978-3-032-07938-1_26)**
+**📝 Research Paper: [Coming Soom]()**
 
 **🚧 Note:** This project is still in development. Some features may not be fully implemented or tested yet.
 
-## 📋 Overview
+## 📋 Table of Contents
 
-This project allows you to generate Manim code from textual descriptions using fine-tuned language models. It is designed to help educators, content creators, and developers create educational animations easily by leveraging the power of relatively smaller language models.
-The project includes:
-- Fine-tuning scripts for smaller LLMs (e.g., Qwen3 8B)
-- A dataset of Manim code and corresponding textual descriptions
-- Jupyter notebooks for testing and development
-- Example prompts and generated Manim code
-##
+- [Overview](#-overview) 
+- [Features](#-features)
+- [Project Structure](#-project-structure)
+- [Installation](#-installation)
+- [Usage](#-usage)
+  - [Training](#training)
+  - [Evaluation](#evaluation)
+- [Dataset](#-dataset)
+- [Models](#-models)
+- [Configuration](#-configuration)
+- [Citation](#-citation)
+- [License](#-license)
 
-## 🛠️ Installation
+## 🔍 Overview
 
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/manim-fine-tune.git
-cd manim-fine-tune
+This repository contains the implementation for fine-tuning LLMs to generate Manim code from natural language descriptions. The approach combines:
 
-# Create and activate a virtual environment (optional but recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows, use: venv\Scripts\activate
+1. **Supervised Fine-Tuning (SFT)** - Initial training on curated Manim code examples
+2. **GRPO/GSPO Training** - Reinforcement learning-based optimization using text and visual rewards
+3. **Wholistic Evaluation** - Automated evaluation pipeline including code execution and video quality assessment
+4. **Multi-modal Reward System** - Combining code execution success, text similarity, and visual comparison metrics
 
-# Install requirements
-pip install -r requirements.txt
+## ✨ Features
 
-# Install Manim if not already installed
-pip install manim
+- **Multiple Training Modes**: Support for SFT, GRPO, and GSPO training strategies
+- **Efficient Fine-Tuning**: LoRA/QLoRA support via [Unsloth](https://github.com/unslothai/unsloth) for memory-efficient training
+- **Comprehensive Evaluation**: Automated evaluation pipeline with code execution verification
+<!-- - **RAG Integration**: API-aware retrieval for enhanced code generation -->
+- **Visual Reward System**: Video comparison metrics for animation quality assessment
+- **Flexible Model Support**: Compatible with various LLM architectures (Llama, Qwen, Ministral, etc.)
+
+## 📁 Project Structure
+
+```
+manim-trainer/
+├── main.py                 # Main entry point
+├── config.py               # Global configuration
+├── src/
+│   ├── evaluation/         # Evaluation engines
+│   │   ├── code_evaluator.py
+│   │   ├── evaluation_engine.py
+│   │   ├── manim_evaluator.py
+│   │   └── video_comparator.py
+│   ├── grpo/               # GRPO/GSPO training utilities
+│   │   ├── grpo_utils.py
+│   │   └── reward_engine.py
+│   ├── inference/          # Inference and generation
+│   │   ├── inference_engine.py
+│   │   ├── inference_utils.py
+│   │   ├── model_config.py
+│   │   └── planner_engine.py
+│   ├── peft/               # Parameter-efficient fine-tuning
+│   │   ├── peft_engine.py
+│   │   └── preprocessor.py
+│   ├── rag/                # Retrieval-Augmented Generation
+│   │   ├── api_inspector.py
+│   │   ├── call_extractor.py
+│   │   └── rag_engine.py
+│   └── utils/              # Utility functions
+├── tools/                  # CLI tools
+├── data/                   # Training/evaluation datasets
+└── output/                 # Model outputs and results
 ```
 
-## 🚀 Usage
+## 🚀 Installation
 
-### Fine-tuning a model
-To fine-tune a model, you can run the train_unsloth.py script. This script will load the dataset and fine-tune the specified model using the provided configuration.
+### Prerequisites
+
+- Python 3.11+
+- CUDA-compatible GPU (recommended: 24GB+ VRAM)
+- [Manim Community Edition](https://docs.manim.community/en/stable/installation.html)
+
+### Setup
+
+1. **Clone the repository - T0DO**:
+   ```bash
+   git clone https://github.com/SuienS/manim-trainer.git
+   cd manim-trainer
+   ```
+
+2. **Create conda environment**:
+   ```bash
+   conda env create -f unsloth_py312_5090.yml
+   conda activate unsloth-py312-5090
+   ```
+
+3. **Test Manim installation**:
+   ```bash
+   manim checkhealth
+   ```
+
+## 💻 Usage
+
+### Training
+
+Fine-tune an LLM using SFT followed by GRPO/GSPO:
 
 ```bash
-python train_unsloth.py \
-    --train_model "unsloth/model-name" \
-    --load_in_4bit \
-    --epochs 1 \
-    --max_seq_length 1024 \
-    --per_device_train_batch_size 4 \
-    --gradient_accumulation_steps 4 \
-    --train_data_path "/path/to/manim_sft_dataset.parquet" \
-    --learning_rate 2e-5 \
-    --token "your_hf_token"
-```
-### Evaluating a model
-To evaluate the fine-tuned model, you can use the `evaluate.py` script. This script will load the model and dataset, and then generate Manim code based on the textual descriptions.
-
-```bash
-python evaluate.py \
-    --hf-model-name "hf-model-name" \
-    --use-unsloth \
+python main.py grpo-trainer train \
+    --train-model "unsloth/Qwen3-8B-unsloth-bnb-4bit" \
     --load-in-4bit \
-    --peft-model-path "/path/to/peft_weights" \
-    --cache-path "/your/cache/path" \
-    --run-test-sample \
-    --run-eval
+    --sft-epochs 2 \
+    --grpo-epochs 2 \
+    --max-seq-length 2048 \
+    --prompt-portion 0.2 \
+    --lora-rank 8 \
+    --per-device-train-batch-size 16 \
+    --gradient-accumulation-steps 1 \
+    --train-data-path "data/manim_sft_dataset_train_v2.parquet" \
+    --test-data-path "data/manim_sft_dataset_test_v2.parquet" \
+    --learning-rate 2e-5 \
+    --grpo-learning-rate 1e-6 \
+    --grpo-num-generations 8 \
+    --grpo-num-iterations 4 \
+    --grpo-mode "grpo" \
+    --grpo-start-temperature 0.9 \
+    --suppress-thinking-in-grpo \
+    --no-think-tag "/no_think" \
+    --text-reward-n-workers 1 \
+    --video-reward-n-workers 8 \
+    --model-loader-type "auto" \
+    --random-state 1230 \
+    --output-dir "output/trained_models_v2" \
+    --model-list-file "output/trained_models_v2/trained_model_list.txt" 
 ```
-### Generating Manim code - Upcoming
-To generate Manim code from a textual description, you can use the `main.py` script. This script will prompt the user for a description and then generate the corresponding Manim code.
+
+#### Key Training Parameters
+
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `--train-model` | Base model identifier | Required |
+| `--load-in-4bit` | Enable 4-bit quantization | `False` |
+| `--sft-epochs` | Number of SFT epochs | `2` |
+| `--grpo-epochs` | Number of GRPO epochs | `2` |
+| `--lora-rank` | LoRA rank | `8` |
+| `--grpo-mode` | Training mode (`grpo` or `gspo`) | `grpo` |
+| `--max-seq-length` | Maximum sequence length | `2048` |
+
+### Evaluation
+
+Evaluate a trained model on Manim code generation:
 
 ```bash
-python main.py #To be implemented
+python main.py manim-llm-evaluator evaluate \
+    --evaluation-mode 'sft_grpo' \
+    --selected-model 'unsloth/Qwen3-8B-unsloth-bnb-4bit' \
+    --peft-model-path 'path/to/peft/model' \
+    --dataset-path './data/manim_sft_dataset_v2.parquet' \
+    --output-dir './output/eval_results' \
+    --max-new-tokens 16384 \
+    --load-in-4bit \
+    --batch-size 1 \
+    --timeout-per-eval-sample-sec 1800 \
+    --manim-render-timeout-sec 300 \
+    --prompt-mode 'chat' \
+    --device-map 'auto' \
+    --feedback-rounds 1 \
+    --evaluation-list-file './output/eval_results/evaluation_list_v3.txt' \
+    --watch-variable 'manim_render_success'
 ```
 
-<!-- ### Using the notebooks - Upcoming -->
+#### Evaluation Modes
 
+| Mode | Description |
+|------|-------------|
+| `base` | Evaluate base model without fine-tuning |
+| `sft` | Evaluate SFT-trained model |
+| `sft_grpo` | Evaluate SFT + GRPO trained model |
+<!-- | `sft_grpo_rag_fb` | Full pipeline with RAG and feedback | -->
 
-## 📚 Dataset: ManimBench v1
-The dataset used for fine-tuning consists of Manim code snippets paired with natural language descriptions. It is available in both CSV and Parquet formats in the `data/` directory.
+## 📊 Dataset
 
-The dataset can be also accessed directly from the [HuggingFace Hub](https://huggingface.co/datasets/SuienR/ManimBench-v1) and [Kaggle](https://www.kaggle.com/datasets/ravidussilva/manim-sft/).
+The training and evaluation datasets are available on Hugging Face:
 
-### Dataset Details
+| Dataset | Description | Link |
+|---------|-------------|------|
+| **ManimBench v1 Dataset** | Curated dataset of natural language descriptions paired with Manim code | [🤗 Hugging Face](https://huggingface.co/datasets/SuienR/ManimBench-v1) |
 
-The dataset is structured as follows:
+### Dataset Format
 
-| Column Name | Description |
-|-------------|-------------|
-| `Generated Description` | LLM-generated Natural language description of the Manim animation |
-| `Reviewed Description` | Human-reviewed Natural language description of the Manim animation |
-| `Code` | Corresponding Manim code snippet |
-| `Type` | Complexity type of the animation: `Basic`, `Intermediate`, `Advanced` |
-| `Split` | Split the sample belongs to: `train` or `test` |
+The dataset is provided in Parquet format with the following columns:
 
-### Dataset Usage
-You can use the dataset for training and evaluation by loading it with libraries like Pandas or directly using the HuggingFace Datasets library. The dataset is designed to be compatible with various machine learning frameworks.
+| Column Name             | Description                                                                 |
+|-------------------------|-----------------------------------------------------------------------------|
+| `Generated Description` | A natural language description automatically generated by a language model |
+| `Reviewed Description`  | A human-refined version of the generated description                        |
+| `Code`                  | The corresponding Manim code snippet                                        |
+| `Type`                  | Complexity level of the animation: `Basic`, `Intermediate`, or `Advanced`  |
+| `Split`                 | Dataset split: `train` or `test`                                           |
 
 #### Loading the dataset with HuggingFace Datasets
 
@@ -127,94 +231,57 @@ for index, row in dataset.head().iterrows():
     print(row["Code"])
 ```
 
+<!-- ## 🤖 Models - TODO
 
+Fine-tuned models are available on Hugging Face:
 
-## 📂 Project Structure
+| Model | Base | Training | Link |
+|-------|------|----------|------|
+| **ManimFineTune-Qwen3-8B** | Qwen3-8B | SFT + GSPO | [🤗 Hugging Face](todo) | -->
 
-```
-├── config.py             # Configuration settings
-├── evaluate.py           # Evaluation scripts
-├── train_unsloth.py      # Fine-tuning script for Unsloth models
-├── main.py               # Main script
-├── requirements.txt      # Python dependencies
-├── data/                 # Training and evaluation data and models
-│   ├── manim_sft_dataset.csv
-│   ├── manim_sft_dataset.parquet
-│   └── ...
-├── output/               # Output directory for evaluation results
-└── src/                  # Source code
-```
-
-## 📝 Example
-
-Here's an example of generating a Manim animation from a text description:
-
-```python
-# Input description
-manim_instructions = """Axes and Labels: The video starts with the creation of a set of axes with the x-range from 0 to 10 and the y-range from 0 to 100. The axes are labeled with "x" for the x-axis and "f(x)" for the y-axis.
-
-Graph of the Function: The function f(x) = 2(x - 5)^2 is plotted on the axes. This will appear as a parabola opening upwards, with its vertex at x = 5.
-
-Dot Initialization: A dot is placed at the initial point (0, f(0)).
-
-Dot Movement: The dot will move along the curve of the function as the value of t changes.
-
-Finding the Minimum: The code calculates the minimum value of the function over the specified x-range.
-
-Final Display: The video will end with the dot positioned at the minimum point of the function, (5, 0).
-"""
-
-# Generated Manim code
-# from manim import *
-# 
-# class FunctionAnimation(Scene):
-#     def construct(self):
-#         # Create axes
-#         axes = Axes(
-#             x_range=[0, 10, 1],
-#             y_range=[0, 100, 10],
-#             axis_config={"color": BLUE},
-#         )
-#         axes_labels = axes.get_axis_labels(x_label="x", y_label="f(x)")
-#         self.play(Create(axes), Write(axes_labels))
-#
-#         # Define the function
-#         func = lambda x: 2 * (x - 5) ** 2
-#         graph = axes.plot(func, color=GREEN)
-#
-#         # ... more generated code ...
-```
-
-## 🔬 Technical Details
-
-_Await the research paper for detailed technical insights into the fine-tuning process, model architecture, and evaluation metrics._
-
-## 🧪 Test Results
-_Await the research paper for detailed test results and performance metrics of the fine-tuned models._
+## ⚙️ Configuration
 <!--
-| Model Name | Val | Val |
-|------------|---------------|-----------|
-| Qwen3 8B | 0.11 | 0.11 |
-| Qwen3 14B | 0.11 | 0.11 |
-| Qwen3 32B | 0.11 | 0.11 |
-| Qwen3 70B | 0.11 | 0.11 | -->
+class Config:
+    CACHE_PATH = "cache"
+    EVAL_TEMP_DIR = "tmp/eval"
+    MANIM_VERSION = "Manim Community v0.19.0"
+
+class SupportedModels:
+    """Supported models for the LLM."""
+    QWEN3_8B_BASE = "Qwen/Qwen3-8B-Base"
+    QWEN3_8B_UNSLOTH_4bit = "unsloth/Qwen3-8B-unsloth-bnb-4bit"
+    QWEN3_4B_BASE = "Qwen/Qwen3-4B-Base"
+    LLAMA_3_2_3B = "meta-llama/Llama-3.2-3B-Instruct"
+    CODE_EVALUATOR_MODEL = "microsoft/codebert-base"
+    VIDEO_COMPARATOR_EMBEDDING_CLIP_MODEL = "ViT-L/14" 
+ -->
+Global configuration parameters can be adjusted in `config.py`. Key parameters include:
+- `CACHE_PATH`: Directory for caching models and datasets
+- `EVAL_TEMP_DIR`: Temporary directory for evaluation artifacts
+- `MANIM_VERSION`: Version of Manim Community Edition used
+- `CODE_EVALUATOR_MODEL`: Model used for code evaluation
+- `VIDEO_COMPARATOR_EMBEDDING_CLIP_MODEL`: Model used for video embedding comparison
+
+<!-- ## 📖 Citation
+
+TODO: 
+``` -->
 
 ## 📄 License
 
-This project is licensed under the [CC BY-NC-SA 4.0 License](https://creativecommons.org/licenses/by-nc-sa/4.0/). You are free to share and adapt the material for non-commercial purposes, as long as you give appropriate credit, provide a link to the license, and indicate if changes were made. You may not use the material for commercial purposes.
+This project is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) License. See the [LICENSE](LICENSE) file for details.
 
 ## 🙏 Acknowledgments
 
-- [Manim Community](https://www.manim.community/) for their amazing animation engine
-- Grant Sanderson ([3Blue1Brown](https://www.3blue1brown.com/)) for creating the original Manim
-- All contributors to the Manim documentation used in our dataset
+- [Manim Community](https://www.manim.community/) for the animation library
+- [Unsloth](https://github.com/unslothai/unsloth) for efficient fine-tuning
+- [Hugging Face](https://huggingface.co/) for transformer models and backbone training frameworks
 
-## 📚 References
 
-- [Manim Community Documentation](https://docs.manim.community/en/stable/)
-- [HuggingFace Transformers](https://huggingface.co/docs/transformers/index)
-- [HuggingFace PEFT](https://huggingface.co/docs/peft/index)
+## ✍️ Authors
+- [Ravidu Silva](mailto:ravidus.ac@gmail.com)
+- [Jordan J. Bird](mailto:jordan.bird@ntu.ac.uk)
+---
 
-## 👥 Contributors
-- [Ravidu Silva](https://github.com/SuienS)
-- [Jordan J. Bird](https://github.com/jordan-bird)
+**Note**: This repository is part of ongoing research.
+For questions or collaboration inquiries, please contact [ravidus.ac@gmail.com](mailto:ravidus.ac@gmail.com).

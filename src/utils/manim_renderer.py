@@ -4,11 +4,12 @@ This module provides a class to render videos using Manim Community Edition (Man
 
 __author__      = "Ravidu Silva"
 
+import threading
 import subprocess
 import tempfile
 import os
 import time
-import random
+import uuid
 from pathlib import Path
 from enum import Enum
 
@@ -48,6 +49,8 @@ class ManimRenderer:
             render_quality (RenderQuality): Render quality setting. Default is RenderQuality.P_480.
             timeout (int): Timeout for the Manim command in seconds. Default is None (no timeout).
         """
+        self.lock = threading.Lock()
+
         self.output_dir = output_dir
         self.output_dir.mkdir(parents=True, exist_ok=True)
         self.manim_exec = manim_exec
@@ -66,80 +69,84 @@ class ManimRenderer:
         Returns:
             RenderResult: An object containing the video path, success status, info logs, and error logs.
         """
+        with self.lock:
+            try:
+                # Create a temporary file to store the Manim code
+                with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as temp_file:
+                    temp_file.write(manim_code)
+                    temp_file.flush()
+                    temp_file_name = temp_file.name
 
-        try:
-            # Create a temporary file to store the Manim code
-            with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as temp_file:
-                temp_file.write(manim_code)
-                temp_file.flush()
-                temp_file_name = temp_file.name
+                # Video name: <scene_name>_<unique_id>_<epoch_timestamp>
+                video_name = f"{video_name}_{uuid.uuid4().hex[:12]}_{int(time.time())}"
+                video_path = self.output_dir / video_name
 
-            # Video name: <scene_name>_<epoch_time>.mp4
-            video_name = f"{video_name}_{random.randrange(100000,999999)}_{int(time.time())}"
-            video_path = self.output_dir / video_name
+                # IMP: Use a temporary directory for media output to avoid collisions when rendering in parallel
+                # This ensures intermediate files (Tex, partial movies) don't clash between threads
+                with tempfile.TemporaryDirectory() as temp_media_dir:
+                    # Manim command
+                    manim_cmd = [
+                        self.manim_exec,
+                        temp_file_name
+                    ]
 
-            # Manim command
-            manim_cmd = [
-                self.manim_exec,
-                temp_file_name
-            ]
+                    if scene_name:
+                        manim_cmd.append(scene_name)
 
-            if scene_name:
-                manim_cmd.append(scene_name)
+                    if preview: manim_cmd.append("-p")
 
-            if preview: manim_cmd.append("-p")
+                    manim_cmd += [
+                        str(self.render_quality),
+                        f"--format={format}",
+                        "--media_dir", temp_media_dir, # Isolate media directory
+                        "-o",
+                        str(video_path.absolute()),
+                    ]
+                    
+                    result = subprocess.run(
+                        manim_cmd,
+                        capture_output=True,
+                        text=True,
+                        timeout=self.timeout
+                    )
+                    
+                    # Check if the command was successful
+                    if result.returncode != 0:
+                        raise RuntimeError(f"Manim command failed with error: {result.stderr}")
 
-            manim_cmd += [
-                str(self.render_quality),
-                f"--format={format}",
-                "-o",
-                str(video_path.absolute()),
-            ]
-
-            result = subprocess.run(
-                manim_cmd,
-                capture_output=True,
-                text=True,
-                timeout=self.timeout
-            )
-            
-            # Check if the command was successful
-            if result.returncode != 0:
-                raise RuntimeError(f"Manim command failed with error: {result.stderr}")
-
-            # Check file existence at video_path and get its extension
-            ext = "."+format
-            if (video_path.with_suffix(ext)).exists():
-                video_path = video_path.with_suffix(ext)
-            elif (video_path.with_suffix(".png")).exists():
-                video_path = video_path.with_suffix(".png")
-            else:
-                raise FileNotFoundError(f"Video file not found at {str(video_path)}.<extension>")
+                    # Check file existence at video_path and get its extension
+                    ext = "."+format
+                    if (video_path.with_suffix(ext)).exists():
+                        video_path = video_path.with_suffix(ext)
+                    elif (video_path.with_suffix(".png")).exists():
+                        video_path = video_path.with_suffix(".png")
+                    else:
+                        raise FileNotFoundError(f"Video file not found at {str(video_path)}.<extension>")
 
 
-            return RenderResult(
-                video_path=video_path,
-                success=(result.returncode == 0),
-                info=result.stdout,
-                errors=result.stderr
-            )
+                    return RenderResult(
+                        video_path=video_path,
+                        success=(result.returncode == 0),
+                        info=result.stdout,
+                        errors=result.stderr
+                    )
 
-        except subprocess.TimeoutExpired:
-            return RenderResult(
-                video_path=None,
-                success=False,
-                info="",
-                errors=f"ERROR: Rendering timed out after {self.timeout} seconds."
-            )
-        except Exception as e:
-            return RenderResult(
-                video_path=None,
-                success=False,
-                info="",
-                errors=str(e)
-            )
-        finally:
-            # Clean up the temporary file
-            if os.path.exists(temp_file_name):
-                os.remove(temp_file_name)
+            except subprocess.TimeoutExpired:
+                return RenderResult(
+                    video_path=None,
+                    success=False,
+                    info="",
+                    errors=f"ERROR: Rendering timed out after {self.timeout} seconds."
+                )
+            except Exception as e:
+                return RenderResult(
+                    video_path=None,
+                    success=False,
+                    info="",
+                    errors=str(e)
+                )
+            finally:
+                # Clean up the temporary file
+                if temp_file_name and os.path.exists(temp_file_name):
+                    os.remove(temp_file_name)
             
