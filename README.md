@@ -50,7 +50,7 @@ This repository contains the implementation for fine-tuning LLMs to generate Man
 
 ```
 manim-trainer/
-├── main.py                 # Main entry point
+├── manim_trainer.py                 # Main entry point
 ├── config.py               # Global configuration
 ├── src/
 │   ├── evaluation/         # Evaluation engines
@@ -84,7 +84,7 @@ manim-trainer/
 ### Prerequisites
 
 - Python 3.11+
-- CUDA-compatible GPU (recommended: 24GB+ VRAM)
+- CUDA-compatible GPU (recommended: 24GB+ VRAM, Tested with NVIDIA RTX 5090 32GB)
 - [Manim Community Edition](https://docs.manim.community/en/stable/installation.html)
 
 ### Setup
@@ -106,6 +106,9 @@ manim-trainer/
    manim checkhealth
    ```
 
+**🚧 Note:** Additional dependencies may be required based on the available hardware and OS type. Current setup has been tested on NVIDIA RTX 5090 with 32GB VRAM.
+
+
 ## 💻 Usage
 
 ### Training
@@ -113,11 +116,11 @@ manim-trainer/
 Fine-tune an LLM using SFT followed by GRPO/GSPO:
 
 ```bash
-python main.py grpo-trainer train \
-    --train-model "unsloth/Qwen3-8B-unsloth-bnb-4bit" \
+python manim_trainer.py grpo-trainer train \
+    --train-model "unsloth/Seed-Coder-8B-Instruct-unsloth-bnb-4bit" \
     --load-in-4bit \
-    --sft-epochs 2 \
-    --grpo-epochs 2 \
+    --sft-epochs 1 \
+    --grpo-epochs 1 \
     --max-seq-length 2048 \
     --prompt-portion 0.2 \
     --lora-rank 8 \
@@ -147,21 +150,28 @@ python main.py grpo-trainer train \
 |-----------|-------------|---------|
 | `--train-model` | Base model identifier | Required |
 | `--load-in-4bit` | Enable 4-bit quantization | `False` |
-| `--sft-epochs` | Number of SFT epochs | `2` |
-| `--grpo-epochs` | Number of GRPO epochs | `2` |
+| `--sft-epochs` | Number of SFT epochs | `1` |
+| `--grpo-epochs` | Number of GRPO epochs | `1` |
 | `--lora-rank` | LoRA rank | `8` |
 | `--grpo-mode` | Training mode (`grpo` or `gspo`) | `grpo` |
 | `--max-seq-length` | Maximum sequence length | `2048` |
+
+#### Training Monitoring
+Training progress can be monitored using TensorBoard:
+
+```bash
+tensorboard --logdir 'output/trained_models_v2/model_folder/logs'
+```
 
 ### Evaluation
 
 Evaluate a trained model on Manim code generation:
 
 ```bash
-python main.py manim-llm-evaluator evaluate \
+python manim_trainer.py manim-llm-evaluator evaluate \
     --evaluation-mode 'sft_grpo' \
-    --selected-model 'unsloth/Qwen3-8B-unsloth-bnb-4bit' \
-    --peft-model-path 'path/to/peft/model' \
+    --selected-model 'unsloth/Seed-Coder-8B-Instruct-unsloth-bnb-4bit' \
+    --peft-model-path 'output/trained_models_v2/Seed_Coder_8B_Instruct_unsloth_bnb_4bit_lora_r8_sft_grpo_rw_mean_text_visual_20251211_002632_final' \
     --dataset-path './data/manim_sft_dataset_v2.parquet' \
     --output-dir './output/eval_results' \
     --max-new-tokens 16384 \
@@ -205,31 +215,8 @@ The dataset is provided in Parquet format with the following columns:
 | `Type`                  | Complexity level of the animation: `Basic`, `Intermediate`, or `Advanced`  |
 | `Split`                 | Dataset split: `train` or `test`                                           |
 
-#### Loading the dataset with HuggingFace Datasets
-
-```python
-from datasets import load_dataset
-dataset = load_dataset("SuienR/ManimBench-v1", split="train")
-
-# Top 5 samples
-for sample in dataset.select(range(5)):
-    print(sample["Generated Description"])
-    print(sample["Code"])
-```
-
-#### Loading the dataset with Pandas
-
-```python
-import pandas as pd
-
-splits = {'train': 'manim_sft_dataset_train.parquet', 'test': 'manim_sft_dataset_train.parquet', 'all': 'manim_sft_dataset_all.parquet'}
-df = pd.read_parquet("hf://datasets/SuienR/ManimBench-v1/" + splits["train"])
-
-# Top 5 samples
-for index, row in dataset.head().iterrows():
-    print(row["Generated Description"])
-    print(row["Code"])
-```
+## 🤖 Models
+⏳ **TODO**: Models will be made available upon publication of the research paper.
 
 <!-- ## 🤖 Models - TODO
 
@@ -248,9 +235,6 @@ class Config:
 
 class SupportedModels:
     """Supported models for the LLM."""
-    QWEN3_8B_BASE = "Qwen/Qwen3-8B-Base"
-    QWEN3_8B_UNSLOTH_4bit = "unsloth/Qwen3-8B-unsloth-bnb-4bit"
-    QWEN3_4B_BASE = "Qwen/Qwen3-4B-Base"
     LLAMA_3_2_3B = "meta-llama/Llama-3.2-3B-Instruct"
     CODE_EVALUATOR_MODEL = "microsoft/codebert-base"
     VIDEO_COMPARATOR_EMBEDDING_CLIP_MODEL = "ViT-L/14" 
@@ -262,10 +246,18 @@ Global configuration parameters can be adjusted in `config.py`. Key parameters i
 - `CODE_EVALUATOR_MODEL`: Model used for code evaluation
 - `VIDEO_COMPARATOR_EMBEDDING_CLIP_MODEL`: Model used for video embedding comparison
 
-<!-- ## 📖 Citation
+## 📖 Citation
+You can cite ManimTrainer repo as follows:
 
-TODO: 
-``` -->
+```bibtex
+@software{manimtrainer2025,
+  author = {Ravidu Suien Rammuni Silva and Jordan J. Bird},
+  title = {ManimTrainer},
+  url = {https://github.com/SuienS/manim-trainer},
+  year = {2025}
+}
+```
+**📝 Research Paper: [Coming Soon]()**
 
 ## 📄 License
 

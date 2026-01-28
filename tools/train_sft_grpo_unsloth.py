@@ -7,10 +7,10 @@ References:
 
 Example usage:
 python tools/train_sft_grpo_unsloth.py \
-    --train-model "unsloth/Qwen3-8B-unsloth-bnb-4bit" \
+    --train-model "unsloth/Seed-Coder-8B-Instruct-unsloth-bnb-4bit" \
     --load-in-4bit \
-    --sft-epochs 2 \
-    --grpo-epochs 2 \
+    --sft-epochs 1 \
+    --grpo-epochs 1 \
     --max-seq-length 2048 \
     --prompt-portion 0.2 \
     --lora-rank 8 \

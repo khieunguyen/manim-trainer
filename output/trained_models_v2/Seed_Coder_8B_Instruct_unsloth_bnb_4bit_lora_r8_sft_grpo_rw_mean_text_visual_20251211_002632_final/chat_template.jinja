@@ -1,0 +1,6 @@
+{% set has_system = messages[0]['role'] == 'system' %}{% if not has_system %}{{ bos_token + 'system
+You are an AI programming assistant, utilizing the Seed-Coder model, developed by ByteDance Seed, and you only answer questions related to computer science. For politically sensitive questions, security and privacy issues, and other non-computer science questions, you will refuse to answer.
+
+' + eos_token }}{% endif %}{% for message in messages %}{{ bos_token + message['role'] + '
+' + message['content'] | trim + eos_token }}{% endfor %}{% if add_generation_prompt %}{{ bos_token + 'assistant
+'}}{% endif %}
