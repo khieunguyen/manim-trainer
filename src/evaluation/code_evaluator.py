@@ -1,6 +1,8 @@
 """code_evaluator.py: Evaluate code snippets by comparing outputs to expected results."""
 __author__      = "Ravidu Silva"
 
+import threading
+
 from codebleu import calc_codebleu
 import ast
 from zss import simple_distance, Node
@@ -20,11 +22,14 @@ class CodeEvaluator:
         Args:
             model_name (str): The name of the Hugging Face model to use.
         """
-        
+        self.lock_codebert = threading.Lock()
+        self.lock_codebleu = threading.Lock()
+
         print(f"Loading model: '{model_name}'...")
         self.tokenizer = RobertaTokenizer.from_pretrained(model_name)
         self.model = RobertaModel.from_pretrained(model_name)
         self.model.eval()
+        print("CodeEvaluator Model loaded successfully.")
 
     def evaluate_code(self, generated_code: str, expected_code: str) -> dict:
         """
@@ -37,6 +42,20 @@ class CodeEvaluator:
         Returns:
             dict: A dictionary containing the evaluation scores.
         """
+
+        if generated_code.strip() == "":
+            return {
+                'codebert_similarity': 0.0,
+                'codebleu': 0.0,
+                'ngram_match_score': 0.0,
+                'weighted_ngram_match_score': 0.0,
+                'syntax_match_score': 0.0,
+                'dataflow_match_score': 0.0,
+                'ast_distance_norm': 0.0,
+                'ast_distance_raw': 0.0,
+                'ast_distance_max': 0.0,
+                'syntax_error': True
+            }
 
         results = {
             "codebert_similarity": self.codebert_similarity(generated_code, expected_code)
@@ -58,14 +77,14 @@ class CodeEvaluator:
         Returns:
             float: The similarity score between the two code snippets.
         """
+        with self.lock_codebert:
+            inputs = self.tokenizer([code1, code2], return_tensors='pt', padding=True, truncation=True)
+            with torch.no_grad():
+                outputs = self.model(**inputs)
+            embeddings = outputs.last_hidden_state.mean(dim=1)
+            similarity = torch.cosine_similarity(embeddings[0], embeddings[1], dim=0).item()
 
-        inputs = self.tokenizer([code1, code2], return_tensors='pt', padding=True, truncation=True)
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-        embeddings = outputs.last_hidden_state.mean(dim=1)
-        similarity = torch.cosine_similarity(embeddings[0], embeddings[1], dim=0).item()
-
-        return similarity
+            return similarity
 
 
     def calculate_codebleu(self, generated_code: str, expected_code: str) -> dict:
@@ -84,11 +103,12 @@ class CodeEvaluator:
                 - Syntax match: The syntax match score.
                 - Dataflow match: The dataflow match score.
         """
-        return calc_codebleu(
-            references=[expected_code],
-            predictions=[generated_code],
-            lang="python"
-        )
+        with self.lock_codebleu:
+            return calc_codebleu(
+                references=[expected_code],
+                predictions=[generated_code],
+                lang="python"
+            )
     
 
     def calculate_ast_distance(self, generated_code: str, expected_code: str) -> dict:
