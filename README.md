@@ -7,11 +7,11 @@
 [![Hugging Face Dataset](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Dataset-blue)](https://huggingface.co/datasets/SuienR/ManimBench-v1)
 [![Unsloth](https://img.shields.io/badge/%F0%9F%A6%A5%20Unsloth-Accelerated-orange)](https://github.com/unslothai/unsloth)
 
-A toolkit for fine-tuning Large Language Models (LLMs) to generate [Manim](https://www.manim.community/) animation code using Supervised Fine-Tuning (SFT) and Visually Grounded Reinforcement Learning using Group Relative Policy Optimization (GRPO/GSPO) techniques.
+A toolkit for fine-tuning Large Language Models (LLMs) to generate [Manim](https://www.manim.community/) animation code using Supervised Fine-Tuning (SFT) and Visually Grounded Reinforcement Learning using Group Relative Policy Optimisation (GRPO/GSPO) techniques.
 
-**📝 Research Paper: [Coming Soom]()**
+**📝 Research Paper: [Coming Soon]()**
 
-**🚧 Note:** This project is still in development. Some features may not be fully implemented or tested yet.
+**🚧 Note:** This project is still in development. Some features may not yet be fully implemented or tested.
 
 ## 📋 Table of Contents
 
