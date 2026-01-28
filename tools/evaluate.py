@@ -5,7 +5,7 @@ Saves results to CSV and logs evaluation paths.
 Usage:
 python tools/evaluate.py \
     --evaluation-mode 'sft_grpo' \
-    --selected-model 'unsloth/Qwen3-8B-unsloth-bnb-4bit' \
+    --selected-model 'unsloth/Seed-Coder-8B-Instruct-unsloth-bnb-4bit' \
     --peft-model-path './output/trained_models_v2/Qwen3_8B_unsloth_bnb_4bit_lora_r8_sft_gspo_rw_text_visual_20251127_110202_final' \
     --dataset-path './data/manim_sft_dataset_v2.parquet' \
     --output-dir './output/eval_results' \
@@ -99,7 +99,7 @@ def setup_environment(cache_path_override: str = None):
 @evaluator_app.command()
 def evaluate(
     selected_model: str = typer.Option(
-        'unsloth/Qwen3-8B-unsloth-bnb-4bit', 
+        'unsloth/Seed-Coder-8B-Instruct-unsloth-bnb-4bit', 
         help="Base model identifier (e.g., unsloth/Qwen3-8B...)"
     ),
     peft_model_path: str = typer.Option(
