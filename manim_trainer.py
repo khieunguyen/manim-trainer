@@ -2,7 +2,7 @@
 
 """manim_trainer.py: main entry point for the Manim LLM project.
 
-Example usage:
+Example usage - Training:
 python manim_trainer.py grpo-trainer train \
     --train-model "unsloth/Seed-Coder-8B-Instruct-unsloth-bnb-4bit" \
     --load-in-4bit \
@@ -31,6 +31,7 @@ python manim_trainer.py grpo-trainer train \
     --model-list-file "output/trained_models_v2/trained_model_list.txt" \
     --sample    --sample-size 32
 
+Example usage - Evaluation:
 python manim_trainer.py manim-llm-evaluator evaluate \
     --evaluation-mode 'sft_grpo' \
     --selected-model 'unsloth/Seed-Coder-8B-Instruct-unsloth-bnb-4bit' \
@@ -48,6 +49,14 @@ python manim_trainer.py manim-llm-evaluator evaluate \
     --evaluation-list-file './output/eval_results/evaluation_list_v3.txt' \
     --watch-variable 'manim_render_success' \
     --limit-samples 5
+
+Example usage - Inference:
+python manim_trainer.py inference run_inference \
+    --selected-model "unsloth/Seed-Coder-8B-Instruct-unsloth-bnb-4bit" \
+    --peft-model-path "./output/trained_models_v2/Seed_Coder_8B_Instruct_unsloth_bnb_4bit_lora_r8_sft_grpo_rw_mean_text_visual_20251211_002632_final" \
+    --load-in-4bit \
+    --input-prompt "Create a Manim animation that displays the  message: Welcome to the ManimTrainer repository."
+
     
 """
 
@@ -57,9 +66,10 @@ __email__       = "ravidus.ac@gmail.com"
 import typer
 main_app = typer.Typer(name="ManimTrainer", help="A toolkit for fine-tuning Large Language Models (LLMs) to generate Manim animation code using Supervised Fine-Tuning (SFT) and Visually Grounded Reinforcement Learning using Group Relative Policy Optimization (GRPO/GSPO) techniques.")
 
-from tools import train_sft_grpo_unsloth, evaluate
+from tools import train_sft_grpo_unsloth, evaluate, inference
 
 main_app.add_typer(train_sft_grpo_unsloth.grpo_trainer_app, name="grpo-trainer", help="Fine-tune an LLM with LoRA and using GRPO/GSPO via Unsloth.")
+main_app.add_typer(inference.inference_app, name="inference", help="Perform inference with fine-tuned Manim LLM models.")
 main_app.add_typer(evaluate.evaluator_app, name="manim-llm-evaluator", help="Evaluate an LLM model on Manim code generation.")
 
 if __name__ == "__main__":
