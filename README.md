@@ -195,6 +195,18 @@ python manim_trainer.py manim-llm-evaluator evaluate \
 | `sft_grpo` | Evaluate SFT + GRPO trained model |
 <!-- | `sft_grpo_rag_fb` | Full pipeline with RAG and feedback | -->
 
+### Inference
+
+Generate Manim animations using a fine-tuned model:
+
+```bash
+python manim_trainer.py inference run_inference \
+    --selected-model "unsloth/Seed-Coder-8B-Instruct-unsloth-bnb-4bit" \
+    --peft-model-path "./output/trained_models_v2/Seed_Coder_8B_Instruct_unsloth_bnb_4bit_lora_r8_sft_grpo_rw_mean_text_visual_20251211_002632_final" \
+    --load-in-4bit \
+    --input-prompt "Create a Manim animation that displays the  message: Welcome to the ManimTrainer repository."
+```
+
 ## 📊 Dataset
 
 The training and evaluation datasets are available on Hugging Face:
