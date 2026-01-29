@@ -283,9 +283,9 @@ This project is licensed under the Creative Commons Attribution-NonCommercial-Sh
 
 
 ## ✍️ Authors
-- [Ravidu Silva](mailto:ravidus.ac@gmail.com)
-- [Jordan J. Bird](mailto:jordan.bird@ntu.ac.uk)
+- [Ravidu Silva](https://www.linkedin.com/in/ravidu-silva/)
+- [Jordan J. Bird](https://www.linkedin.com/in/jordanbird1/)
 ---
 
 **Note**: This repository is part of ongoing research.
-For questions or collaboration inquiries, please contact [ravidus.ac@gmail.com](mailto:ravidus.ac@gmail.com).
+For questions or collaboration inquiries, please contact the authors.
