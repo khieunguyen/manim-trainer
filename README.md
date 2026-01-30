@@ -89,7 +89,7 @@ manim-trainer/
 
 ### Setup
 
-1. **Clone the repository - T0DO**:
+1. **Clone the repository**:
    ```bash
    git clone https://github.com/SuienS/manim-trainer.git
    cd manim-trainer
