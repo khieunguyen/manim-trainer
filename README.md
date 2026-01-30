@@ -228,7 +228,11 @@ The dataset is provided in Parquet format with the following columns:
 | `Split`                 | Dataset split: `train` or `test`                                           |
 
 ## 🤖 Models
-⏳ **TODO**: Models will be made available upon publication of the research paper.
+
+The trained LoRA adapters for the Seed Coder 8B model can be found in `output/trained_models_v2/`.
+
+
+⏳ **TODO**: The rest of the models will be made available upon publication of the research paper.
 
 <!-- ## 🤖 Models - TODO
 
