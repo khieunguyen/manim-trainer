@@ -7,10 +7,12 @@
 [![Manim CE 0.19.0](https://img.shields.io/badge/Manim%20CE-0.19.0-green)](https://www.manim.community/)
 [![Hugging Face Dataset](https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-ManimBench--v1-blue)](https://huggingface.co/datasets/SuienR/ManimBench-v1)
 [![Unsloth](https://img.shields.io/badge/%F0%9F%A6%A5%20Unsloth-Accelerated-orange)](https://github.com/unslothai/unsloth)
+[![arXiv](https://img.shields.io/badge/arXiv-2604.18364-b31b1b.svg)](https://arxiv.org/abs/2604.18364)
 
 An end-to-end framework for fine-tuning and deploying Large Language Models (LLMs) to generate [Manim](https://www.manim.community/) animation code from natural language descriptions. It combines Supervised Fine-Tuning (SFT) with visually grounded Reinforcement Learning via Group Relative Policy Optimisation (GRPO), and provides agentic inference strategies — Renderer-in-the-Loop (RITL) and API documentation-augmented RITL (RITL-DOC) — for iterative self-correction at inference time.
 
-> **📝 Research Paper:** [Coming Soon]()
+> **📝 Research Paper** _(Under Review)_: [Training and Agentic Inference Strategies for LLM-based Manim Animation Generation
+](https://arxiv.org/abs/2604.18364)
 
 ## 📋 Table of Contents
 
