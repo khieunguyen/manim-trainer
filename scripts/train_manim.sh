@@ -32,6 +32,6 @@ python manim_trainer.py grpo-trainer train \
   --video-reward-n-workers 8 \
   --model-loader-type "auto" \
   --random-state 1230 \
-  --output-dir "/data/output/qwen3.6_27b_manim_sft_v2" \
-  --model-list-file "/data/output/qwen3.6_27b_manim_sft_v2/trained_model_list.txt" \
+  --output-dir "/data/qwen3.6_27b_manim_sft_v2" \
+  --model-list-file "/data/qwen3.6_27b_manim_sft_v2/trained_model_list.txt" \
  
