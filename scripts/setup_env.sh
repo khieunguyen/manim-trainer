@@ -37,6 +37,7 @@ else
 fi
 
 chmod +X /data/manim-trainer/scripts/setup_env.sh
+chmod +X /data/manim-trainer/scripts/train_manim.sh
 
 python - <<'PY'
 import torch
