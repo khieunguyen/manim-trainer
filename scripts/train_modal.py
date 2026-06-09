@@ -32,7 +32,7 @@ app = modal.App("manim-trainer")
 )
 def setup():
     import subprocess
-    subprocess.run(["bash", "/data/scripts/setup_env.sh"], check=True)
+    subprocess.run(["bash", "/data/manim-trainer/scripts/setup_env.sh"], check=True)
     volume.commit()
 
 
@@ -44,7 +44,7 @@ def setup():
 )
 def train_manim():
     import subprocess
-    subprocess.run(["bash", "/data/scripts/train_manim.sh"], check=True)
+    subprocess.run(["bash", "/data/manim-trainer/scripts/train_manim.sh"], check=True)
     volume.commit()
 
 
