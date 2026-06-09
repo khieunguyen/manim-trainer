@@ -22,6 +22,7 @@ image = (
     .add_local_file(
         "setup_env.sh",
         "/root/setup_env.sh",
+        copy=True
     )
     .run_commands(
         "bash /root/setup_env.sh"
