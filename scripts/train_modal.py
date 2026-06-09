@@ -19,6 +19,13 @@ image = (
         "tmux",
         "curl",
     )
+    .add_local_file(
+        "setup_env.sh",
+        "/root/setup_env.sh",
+    )
+    .run_commands(
+        "bash /root/setup_env.sh"
+    )
 )
 
 app = modal.App("manim-trainer")
