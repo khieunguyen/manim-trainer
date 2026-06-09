@@ -39,6 +39,8 @@ fi
 chmod +X /data/manim-trainer/scripts/setup_env.sh
 chmod +X /data/manim-trainer/scripts/train_manim.sh
 
+export LD_LIBRARY_PATH="/usr/local/lib/python3.12/site-packages/nvidia/cu13/lib:${LD_LIBRARY_PATH:-}"
+
 python - <<'PY'
 import torch
 print("torch:", torch.__version__, torch.version.cuda)
