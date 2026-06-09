@@ -29,25 +29,3 @@ python -m pip install -U --no-cache-dir \
   pandas pyarrow tensorboard \
   openai anthropic
 
-if [ ! -d /data/manim-trainer ]; then
-  git clone https://github.com/khieunguyen/manim-trainer.git /data/manim-trainer
-else
-  cd /data/manim-trainer
-  git pull
-fi
-
-chmod +X /data/manim-trainer/scripts/setup_env.sh
-chmod +X /data/manim-trainer/scripts/train_manim.sh
-
-export LD_LIBRARY_PATH="/usr/local/lib/python3.12/site-packages/nvidia/cu13/lib:${LD_LIBRARY_PATH:-}"
-
-python - <<'PY'
-import torch
-print("torch:", torch.__version__, torch.version.cuda)
-import unsloth
-print("unsloth OK")
-import bitsandbytes as bnb
-print("bitsandbytes:", bnb.__version__)
-import vllm
-print("vllm:", vllm.__version__)
-PY
