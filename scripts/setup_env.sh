@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd /data
-
 python -m pip install -U pip setuptools wheel
 
 python -m pip uninstall -y \
