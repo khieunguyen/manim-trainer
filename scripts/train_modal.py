@@ -56,11 +56,24 @@ def train_manim():
     volume.commit()
 
 
+@app.function(
+    image=image,
+    gpu="A100-80GB",
+    timeout=24 * 60 * 60,
+    volumes={"/data": volume},
+)
+def train_skip_sft():
+    import subprocess
+    subprocess.run(["bash", "/data/manim-trainer/scripts/train_manim_skip_sft.sh"], check=True)
+    volume.commit()
+
 @app.local_entrypoint()
 def main(task: str = "train_manim"):
     if task == "setup":
         setup.remote()
     elif task == "train_manim":
         train_manim.remote()
+    elif task == "train_skip_sft":
+        train_skip_sft.remote()
     else:
         raise ValueError(f"Unknown task: {task}")
