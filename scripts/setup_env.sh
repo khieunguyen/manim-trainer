@@ -25,5 +25,6 @@ python -m pip install -U --no-cache-dir \
   scikit-image \
   openai-clip \
   pandas pyarrow tensorboard \
-  openai anthropic
+  openai anthropic \
+  tree-sitter-python
 
