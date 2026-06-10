@@ -380,6 +380,8 @@ def train(
 
     else:
         model_save_path = sft_model_path
+        sft_timestamp = utils.get_timestamp()
+
         print(f"Skipping SFT training. Using pre-trained SFT model from {model_save_path}...")
 
 
