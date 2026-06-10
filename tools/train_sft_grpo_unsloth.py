@@ -34,6 +34,11 @@ python tools/train_sft_grpo_unsloth.py \
     --model-list-file "output/trained_models_v2/trained_model_list.txt" \
     --sample    --sample-size 32
 
+Skip SFT and continue GRPO training:
+python tools/train_sft_grpo_unsloth.py \
+    --skip-sft \
+    --sft-model-path "output/trained_models_v2/qwen3_4b_unsloth_bnb_4bit_lora_r8_sft_2025-01-15_12-30-45_final" \
+    ... (other GRPO parameters same as above)
 """
 import os
 from pathlib import Path
@@ -76,6 +81,8 @@ REWARD_AGGREGATION_OPTIONS = ["arithmetic", "geo"]
 @grpo_trainer_app.command()
 def train(
     train_model: str = typer.Option("unsloth/Qwen3-4B-unsloth-bnb-4bit", help="HF model name."),
+    skip_sft: bool = typer.Option(False, help="Skip SFT training and load from sft_model_path."),
+    sft_model_path: Optional[str] = typer.Option(None, help="Path to pre-trained SFT model (required if skip_sft is True)."),
     sft_epochs: int = typer.Option(1, help="Number of SFT epochs."),
     grpo_epochs: int = typer.Option(1, help="Number of GRPO/GSPO epochs."),
     max_seq_length: int = typer.Option(2048, help="Max sequence length."),
@@ -146,13 +153,14 @@ def train(
     if model_loader_type not in ["auto", "fastmodel", "fastlanguagemodel"]:
         raise ValueError("Invalid model_loader_type. Choose either 'auto', 'fastmodel', or 'fastlanguagemodel'.")
     
+    if skip_sft and sft_model_path is None:
+        raise ValueError("sft_model_path must be provided when skip_sft is True.")
+
     # Check if model_list_file exists
     if model_list_file is not None:
         model_list_path = Path(model_list_file)
         if not model_list_path.parent.exists():
             model_list_path.parent.mkdir(parents=True, exist_ok=True)
-
-    print("Loading model and tokenizer...")
 
     is_moe_model = is_moe(train_model)
     print(f"Detected MoE model: {is_moe_model}")
@@ -180,35 +188,6 @@ def train(
     if "codegemma" in train_model.lower():
         no_system_role = True
         print("Detected CodeGemma model. Setting no_system_role to True.")
-
-    # USE the FastModel class to load the model since the model is an MoE model
-    model, tokenizer = ModelLoader.from_pretrained(
-        model_name = train_model,
-        max_seq_length = max_seq_length,
-        load_in_4bit = load_in_4bit,
-        full_finetuning = False,
-        max_lora_rank = lora_rank,
-        # fast_inference=True,
-        # gpu_memory_utilization = 0.85,
-        token = token,
-    )
-
-    # Get PEFT model
-    from peft import PeftModel
-    model: PeftModel = ModelLoader.get_peft_model(
-        model,
-        r = lora_rank,
-        target_modules = [
-            "q_proj", "k_proj", "v_proj", "o_proj","gate_proj", "up_proj", "down_proj",
-        ],
-        lora_alpha = lora_rank*2,
-        lora_dropout = 0,
-        bias = "none",
-        use_gradient_checkpointing = "unsloth",
-        max_seq_length = max_seq_length,
-        random_state = random_state,
-    )
-    print("Model and tokenizer loaded successfully.")
 
     print("Loading the Dataset...")
     train_dataset_df = pd.read_parquet(train_data_path)
@@ -258,114 +237,151 @@ def train(
         batched=False,
     )
 
-    # Format the dataset for SFT training
-    format_for_sft_fn = partial(
-        format_for_sft,
-        tokenizer=tokenizer,
-    )
-
-    train_dataset_sft = train_dataset.map(
-        format_for_sft_fn,
-        remove_columns=train_dataset.column_names,
-        # num_proc=4,
-        batched=False,
-    )
-
-    test_dataset_sft = test_dataset.map(
-        format_for_sft_fn,
-        remove_columns=test_dataset.column_names,
-        # num_proc=4,
-        batched=False,
-    )
-
-    print("Example preprocessed sample:")
-    print(train_dataset_sft[0])
-
-    print("Dataset Columns", train_dataset_sft.column_names)
-
-    print("Dataset preprocessed successfully.")
-
-    print("Starting model training (SFT)...")
-    
     gpu_count = torch.cuda.device_count()
     print(f"Number of GPUs available: {gpu_count}")
 
-    sft_timestamp = utils.get_timestamp()
+    if not skip_sft:
+        print("Loading model and tokenizer...")
 
-    sft_model_unique_name = f"{train_model_name}_sft_{sft_timestamp}"
+        # USE the FastModel class to load the model since the model is an MoE model
+        model, tokenizer = ModelLoader.from_pretrained(
+            model_name = train_model,
+            max_seq_length = max_seq_length,
+            load_in_4bit = load_in_4bit,
+            full_finetuning = False,
+            max_lora_rank = lora_rank,
+            # fast_inference=True,
+            # gpu_memory_utilization = 0.85,
+            token = token,
+        )
 
-    sft_output_dir = os.path.join(output_dir, sft_model_unique_name)
-    os.makedirs(sft_output_dir, exist_ok=True)
-    sft_logging_dir = os.path.join(sft_output_dir, "logs")
-    os.makedirs(sft_logging_dir, exist_ok=True)
+        # Get PEFT model
+        from peft import PeftModel
+        model: PeftModel = ModelLoader.get_peft_model(
+            model,
+            r = lora_rank,
+            target_modules = [
+                "q_proj", "k_proj", "v_proj", "o_proj","gate_proj", "up_proj", "down_proj",
+            ],
+            lora_alpha = lora_rank*2,
+            lora_dropout = 0,
+            bias = "none",
+            use_gradient_checkpointing = "unsloth",
+            max_seq_length = max_seq_length,
+            random_state = random_state,
+        )
+        print("Model and tokenizer loaded successfully.")
 
-    print("SFT Output Directory:", sft_output_dir)
-    print("SFT Tensorboard Logging Directory:", sft_logging_dir)
+        # Format the dataset for SFT training
+        format_for_sft_fn = partial(
+            format_for_sft,
+            tokenizer=tokenizer,
+        )
 
-    sft_config = SFTConfig(
-        completion_only_loss=True,
-        dataset_text_field="messages",
-        num_train_epochs=sft_epochs,
-        warmup_ratio=0.1,
-        learning_rate=learning_rate,
-        lr_scheduler_type = "linear",
-        per_device_train_batch_size=per_device_train_batch_size,
-        # per_device_eval_batch_size=per_device_train_batch_size,
-        gradient_accumulation_steps=gradient_accumulation_steps,
+        train_dataset_sft = train_dataset.map(
+            format_for_sft_fn,
+            remove_columns=train_dataset.column_names,
+            # num_proc=4,
+            batched=False,
+        )
+
+        test_dataset_sft = test_dataset.map(
+            format_for_sft_fn,
+            remove_columns=test_dataset.column_names,
+            # num_proc=4,
+            batched=False,
+        )
+
+        print("Example preprocessed sample:")
+        print(train_dataset_sft[0])
+
+        print("Dataset Columns", train_dataset_sft.column_names)
+
+        print("Dataset preprocessed successfully.")
+
+        print("Starting model training (SFT)...")
         
-        logging_steps=gradient_accumulation_steps,
+        sft_timestamp = utils.get_timestamp()
 
-        eval_strategy="steps",
-        eval_steps=gradient_accumulation_steps,
+        sft_model_unique_name = f"{train_model_name}_sft_{sft_timestamp}"
 
-        save_strategy="steps",
-        save_steps=gradient_accumulation_steps,
-        save_total_limit=1,
+        sft_output_dir = os.path.join(output_dir, sft_model_unique_name)
+        os.makedirs(sft_output_dir, exist_ok=True)
+        sft_logging_dir = os.path.join(sft_output_dir, "logs")
+        os.makedirs(sft_logging_dir, exist_ok=True)
 
-        load_best_model_at_end=True,
-        metric_for_best_model="eval_loss",
-        greater_is_better=False,
+        print("SFT Output Directory:", sft_output_dir)
+        print("SFT Tensorboard Logging Directory:", sft_logging_dir)
 
-        optim = "adamw_8bit",
-        weight_decay = 0.01,
+        sft_config = SFTConfig(
+            completion_only_loss=True,
+            dataset_text_field="messages",
+            num_train_epochs=sft_epochs,
+            warmup_ratio=0.1,
+            learning_rate=learning_rate,
+            lr_scheduler_type = "linear",
+            per_device_train_batch_size=per_device_train_batch_size,
+            # per_device_eval_batch_size=per_device_train_batch_size,
+            gradient_accumulation_steps=gradient_accumulation_steps,
+            
+            logging_steps=gradient_accumulation_steps,
 
-        fp16=not torch.cuda.is_bf16_supported(),
-        bf16=torch.cuda.is_bf16_supported(),
+            eval_strategy="steps",
+            eval_steps=gradient_accumulation_steps,
 
-        output_dir=sft_output_dir,
-        logging_dir=sft_logging_dir,
-        # TODO: ddp_find_unused_parameters=False if torch.cuda.device_count() > 1 else None,
-        seed=random_state,
-        report_to="tensorboard",
-    )
+            save_strategy="steps",
+            save_steps=gradient_accumulation_steps,
+            save_total_limit=1,
 
-    trainer = SFTTrainer(
-        model=model,
-        train_dataset=train_dataset_sft,
-        eval_dataset=test_dataset_sft,
-        max_seq_length=max_seq_length,
-        tokenizer=tokenizer,
-        args=sft_config,
-    )
-    trainer.train()
+            load_best_model_at_end=True,
+            metric_for_best_model="eval_loss",
+            greater_is_better=False,
 
-    print("Model training (SFT) completed.")
-    model_save_name = f"{sft_model_unique_name}_final"
-    model_save_path = os.path.join(output_dir, model_save_name)
-    model.save_pretrained(model_save_path)
-    tokenizer.save_pretrained(model_save_path) # Ensure tokenizer is saved
-    with open(model_list_path, 'a') as model_list_f:
-        model_list_f.write(f"{model_save_path}\n")
-    print("SFT Model saved:", model_save_path)
+            optim = "adamw_8bit",
+            weight_decay = 0.01,
 
-    # ------------------------------------------------------------------
-    # FIX: Reload model to clear SFT state and ensure clean GRPO start
-    # ------------------------------------------------------------------
-    print("Cleaning up SFT resources...")
-    del trainer, model, tokenizer
-    torch.cuda.empty_cache()
-    import gc
-    gc.collect()
+            fp16=not torch.cuda.is_bf16_supported(),
+            bf16=torch.cuda.is_bf16_supported(),
+
+            output_dir=sft_output_dir,
+            logging_dir=sft_logging_dir,
+            # TODO: ddp_find_unused_parameters=False if torch.cuda.device_count() > 1 else None,
+            seed=random_state,
+            report_to="tensorboard",
+        )
+
+        trainer = SFTTrainer(
+            model=model,
+            train_dataset=train_dataset_sft,
+            eval_dataset=test_dataset_sft,
+            max_seq_length=max_seq_length,
+            tokenizer=tokenizer,
+            args=sft_config,
+        )
+        trainer.train()
+
+        print("Model training (SFT) completed.")
+        model_save_name = f"{sft_model_unique_name}_final"
+        model_save_path = os.path.join(output_dir, model_save_name)
+        model.save_pretrained(model_save_path)
+        tokenizer.save_pretrained(model_save_path) # Ensure tokenizer is saved
+        with open(model_list_path, 'a') as model_list_f:
+            model_list_f.write(f"{model_save_path}\n")
+        print("SFT Model saved:", model_save_path)
+
+        # ------------------------------------------------------------------
+        # FIX: Reload model to clear SFT state and ensure clean GRPO start
+        # ------------------------------------------------------------------
+        print("Cleaning up SFT resources...")
+        del trainer, model, tokenizer
+        torch.cuda.empty_cache()
+        import gc
+        gc.collect()
+
+    else:
+        model_save_path = sft_model_path
+        print(f"Skipping SFT training. Using pre-trained SFT model from {model_save_path}...")
+
 
     print(f"Reloading model from {model_save_path} for {grpo_mode.upper()} training...")
     # Reload the model with the trained SFT adapters
