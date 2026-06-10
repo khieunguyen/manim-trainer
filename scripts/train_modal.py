@@ -38,18 +38,6 @@ app = modal.App("manim-trainer")
     timeout=24 * 60 * 60,
     volumes={"/data": volume},
 )
-def setup():
-    import subprocess
-    subprocess.run(["bash", "/data/manim-trainer/scripts/setup_env.sh"], check=True)
-    volume.commit()
-
-
-@app.function(
-    image=image,
-    gpu="A100-80GB",
-    timeout=24 * 60 * 60,
-    volumes={"/data": volume},
-)
 def train_manim():
     import subprocess
     subprocess.run(["bash", "/data/manim-trainer/scripts/train_manim.sh"], check=True)
