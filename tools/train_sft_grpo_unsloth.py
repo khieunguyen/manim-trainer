@@ -112,6 +112,7 @@ def train(
     text_reward_n_workers: int = typer.Option(1, help="Number of workers for text reward computation."),
     video_reward_n_workers: int = typer.Option(4, help="Number of workers for video reward computation."),
     reward_aggregation: str = typer.Option("arithmetic", help="Reward aggregation method. Options: " + str(REWARD_AGGREGATION_OPTIONS), show_choices=True, autocompletion=lambda: REWARD_AGGREGATION_OPTIONS, case_sensitive=False),
+    force_fp16: bool = typer.Option(False, help="Force float16 model loading and trainer precision even when bf16 is supported."),
     token: str = typer.Option(None, help="Hugging Face token for gated models."),
     sample: bool = typer.Option(False, help="Run a test sample to test the script."),
     sample_size: int = typer.Option(3, help="Number of samples to run for testing the script."),
@@ -189,6 +190,11 @@ def train(
         no_system_role = True
         print("Detected CodeGemma model. Setting no_system_role to True.")
 
+    use_bf16 = torch.cuda.is_available() and torch.cuda.is_bf16_supported() and not force_fp16
+    compute_dtype = torch.bfloat16 if use_bf16 else torch.float16
+    print(f"Using compute dtype: {compute_dtype}")
+    print(f"Trainer precision: fp16={not use_bf16}, bf16={use_bf16}")
+
     print("Loading the Dataset...")
     train_dataset_df = pd.read_parquet(train_data_path)
     test_dataset_df = pd.read_parquet(test_data_path)
@@ -247,6 +253,7 @@ def train(
         model, tokenizer = ModelLoader.from_pretrained(
             model_name = train_model,
             max_seq_length = max_seq_length,
+            dtype = compute_dtype,
             load_in_4bit = load_in_4bit,
             full_finetuning = False,
             max_lora_rank = lora_rank,
@@ -340,8 +347,8 @@ def train(
             optim = "adamw_8bit",
             weight_decay = 0.01,
 
-            fp16=not torch.cuda.is_bf16_supported(),
-            bf16=torch.cuda.is_bf16_supported(),
+            fp16 = not use_bf16,
+            bf16 = use_bf16,
 
             output_dir=sft_output_dir,
             logging_dir=sft_logging_dir,
@@ -390,6 +397,7 @@ def train(
     model, tokenizer = ModelLoader.from_pretrained(
         model_name = model_save_path, # Load the just-trained adapters
         max_seq_length = max_seq_length,
+        dtype = compute_dtype,
         load_in_4bit = load_in_4bit,
         max_lora_rank = lora_rank,
         token = token,
@@ -528,9 +536,8 @@ def train(
         # metric_for_best_model = "eval_loss",
         # greater_is_better = False,
 
-        # TODO: use bf16 if posible
-        fp16 = True, #not torch.cuda.is_bf16_supported(),
-        bf16 = False, #torch.cuda.is_bf16_supported(),
+        fp16 = not use_bf16,
+        bf16 = use_bf16,
 
         optim = "adamw_8bit",
         weight_decay = 0.01,
