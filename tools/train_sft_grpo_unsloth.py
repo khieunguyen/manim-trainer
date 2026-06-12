@@ -112,7 +112,7 @@ def train(
     text_reward_n_workers: int = typer.Option(1, help="Number of workers for text reward computation."),
     video_reward_n_workers: int = typer.Option(4, help="Number of workers for video reward computation."),
     reward_aggregation: str = typer.Option("arithmetic", help="Reward aggregation method. Options: " + str(REWARD_AGGREGATION_OPTIONS), show_choices=True, autocompletion=lambda: REWARD_AGGREGATION_OPTIONS, case_sensitive=False),
-    force_fp16: bool = typer.Option(False, help="Force float16 model loading and trainer precision even when bf16 is supported."),
+    force_fp16: bool = typer.Option(True, help="Force float16 model loading and trainer precision even when bf16 is supported."),
     token: str = typer.Option(None, help="Hugging Face token for gated models."),
     sample: bool = typer.Option(False, help="Run a test sample to test the script."),
     sample_size: int = typer.Option(3, help="Number of samples to run for testing the script."),
