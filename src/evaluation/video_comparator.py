@@ -8,6 +8,7 @@ __author__      = "Ravidu Silva"
 
 import typing
 import threading
+from contextlib import nullcontext
 
 import cv2
 from fastdtw import fastdtw
@@ -45,6 +46,8 @@ class VideoComparator:
 
         print("Loading CLIP model for video semantic encoding...")
         self.embedding_model, self.preprocess = clip.load(embedding_clip_model, device=self.device)
+        self.embedding_model.float()
+        self.embedding_model.eval()
         print("CLIP model loaded: ", embedding_clip_model)
 
 
@@ -195,8 +198,13 @@ class VideoComparator:
         """
         img_feats = []
         for f in frames:
-            img = self.preprocess(Image.fromarray(f)).unsqueeze(0).to(self.device)
-            with torch.no_grad():
+            img = self.preprocess(Image.fromarray(f)).unsqueeze(0).to(self.device).float()
+            autocast_context = (
+                torch.cuda.amp.autocast(enabled=False)
+                if str(self.device).startswith("cuda")
+                else nullcontext()
+            )
+            with torch.no_grad(), autocast_context:
                 img_feat = self.embedding_model.encode_image(img)
             img_feat = img_feat / img_feat.norm(dim=-1, keepdim=True)
             img_feats.append(img_feat.cpu().numpy()[0])
