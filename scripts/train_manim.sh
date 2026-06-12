@@ -9,13 +9,13 @@ export TRANSFORMERS_CACHE="/data/hf-cache"
 cd /data/manim-trainer
 
 python manim_trainer.py grpo-trainer train \
-  --train-model "Qwen/Qwen3.6-27B" \
+  --train-model "unsloth/Seed-Coder-8B-Instruct-unsloth-bnb-4bit" \
   --load-in-4bit \
   --sft-epochs 3 \
   --grpo-epochs 1 \
-  --max-seq-length 4096 \
+  --max-seq-length 2048 \
   --prompt-portion 0.2 \
-  --lora-rank 64 \
+  --lora-rank 16 \
   --per-device-train-batch-size 16 \
   --gradient-accumulation-steps 1 \
   --train-data-path "data/manim_sft_dataset_train_v2.parquet" \
@@ -32,6 +32,6 @@ python manim_trainer.py grpo-trainer train \
   --video-reward-n-workers 8 \
   --model-loader-type "auto" \
   --random-state 1230 \
-  --output-dir "/data/qwen3.6_27b_manim_sft_v2" \
-  --model-list-file "/data/qwen3.6_27b_manim_sft_v2/trained_model_list.txt" \
+  --output-dir "/data/Seed-Coder-8B-Instruct_manim_sft_v2" \
+  --model-list-file "/data/Seed-Coder-8B-Instruct_manim_sft_v2/trained_model_list.txt" \
  
