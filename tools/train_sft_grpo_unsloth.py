@@ -528,8 +528,9 @@ def train(
         # metric_for_best_model = "eval_loss",
         # greater_is_better = False,
 
-        fp16 = not torch.cuda.is_bf16_supported(),
-        bf16 = torch.cuda.is_bf16_supported(),
+        # TODO: use bf16 if posible
+        fp16 = True #not torch.cuda.is_bf16_supported(),
+        bf16 = False #torch.cuda.is_bf16_supported(),
 
         optim = "adamw_8bit",
         weight_decay = 0.01,
