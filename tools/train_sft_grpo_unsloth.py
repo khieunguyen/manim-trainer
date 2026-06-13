@@ -574,7 +574,8 @@ def train(
     model_save_name = f"{grpo_model_unique_name}_final"
     model_save_path = os.path.join(output_dir, model_save_name)
     model.save_pretrained(model_save_path)
-
+    tokenizer.save_pretrained(model_save_path) # Ensure tokenizer is saved
+        
     with open(model_list_path, 'a') as model_list_f:
         model_list_f.write(f"{model_save_path}\n")
 
