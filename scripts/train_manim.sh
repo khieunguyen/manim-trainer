@@ -12,7 +12,7 @@ python manim_trainer.py grpo-trainer train \
   --train-model "openbmb/MiniCPM5-1B" \
   --load-in-4bit \
   --sft-epochs 3 \
-  --grpo-epochs 1 \
+  --grpo-epochs 2 \
   --max-seq-length 2048 \
   --prompt-portion 0.2 \
   --lora-rank 8 \
